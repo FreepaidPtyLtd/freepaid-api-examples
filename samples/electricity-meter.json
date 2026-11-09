@@ -1,0 +1,7 @@
+{
+    "status": "success",
+    "message": "We support this meter.",
+    "meter_number": "01234567890",
+    "supported": true,
+    "provider": "Example Municipality"
+}

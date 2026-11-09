@@ -1,0 +1,12 @@
+{
+    "status": "success",
+    "message": "Airtime order queued successfully",
+    "request_id": 1001,
+    "service": "airtime",
+    "msisdn": "+27821234567",
+    "network": "p-vodacom",
+    "amount": 10,
+    "reference": "EXAMPLE-AIRTIME-001",
+    "queue_status": "queued",
+    "timestamp": "2026-07-06 10:00:00"
+}

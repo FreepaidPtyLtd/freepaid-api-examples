@@ -1,0 +1,16 @@
+{
+    "status": "delivered",
+    "service": "airtime",
+    "request_id": 1001,
+    "msisdn": "+27821234567",
+    "network": "p-vodacom",
+    "amount": 10,
+    "reference": "EXAMPLE-AIRTIME-001",
+    "platform_order_number": "100000001",
+    "queue_status": "Order Placed",
+    "final_order_id": 1002,
+    "final_order_status": "delivered",
+    "error": "Success",
+    "created_at": "2026-07-06 10:00:00",
+    "updated_at": "2026-07-06 10:00:30"
+}

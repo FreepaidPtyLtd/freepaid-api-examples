@@ -1,0 +1,26 @@
+{
+    "status": "success",
+    "message": "Order fetched successfully",
+    "data": {
+        "order": {
+            "id": 2001,
+            "reference": "ALLNET-EXAMPLE-001",
+            "total_vouchers": 2,
+            "value_per_voucher": 10,
+            "total_amount": 20,
+            "description": "Example reward order",
+            "is_fully_marked_sent": false,
+            "created_at": "2026-07-06 10:00:00"
+        },
+        "statistics": {
+            "total": 2,
+            "unused": 2,
+            "used": 0,
+            "unassigned": 0
+        },
+        "vouchers": [
+            {"voucher_id": 2002, "pin": "SAMPLE-PIN-1", "value": 10},
+            {"voucher_id": 2003, "pin": "SAMPLE-PIN-2", "value": 10}
+        ]
+    }
+}

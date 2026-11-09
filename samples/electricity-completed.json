@@ -1,0 +1,23 @@
+{
+    "status": "success",
+    "order_id": 1501,
+    "message": "This electricity order has been processed successfully.",
+    "transaction_details": {
+        "reference": "100000002",
+        "amount": "R146.00",
+        "recipient": "27821234567",
+        "meter_number": "01234567890",
+        "network": "Electricity",
+        "date": "2026-07-06 10:00:30",
+        "utility": "Example Municipality"
+    },
+    "recharge_pin_information": [
+        {
+            "entry_order": 1,
+            "description": "PURCHASE",
+            "pin": "SAMPLE-PIN",
+            "units": "40.00"
+        }
+    ],
+    "entry_instructions": "Enter the purchase token on the meter."
+}

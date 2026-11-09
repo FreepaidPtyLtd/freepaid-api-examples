@@ -1,0 +1,13 @@
+{
+    "status": "success",
+    "message": "Order placed successfully",
+    "data": {
+        "order_id": 2001,
+        "reference": "ALLNET-EXAMPLE-001",
+        "total_vouchers": 2,
+        "value_per_voucher": 10,
+        "total_amount": 20,
+        "description": "Example reward order",
+        "created_at": "2026-07-06 10:00:00"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "status": "success",
+    "message": "Electricity order accepted",
+    "order_id": 1501,
+    "client_reference": "EXAMPLE-ELEC-001_1783324800_000000000001",
+    "submitted_reference": "EXAMPLE-ELEC-001",
+    "order_reference_id": "100000002",
+    "meter_number": "01234567890",
+    "recipient": "27821234567",
+    "send_sms": false,
+    "sms_company_name": null,
+    "amount": 150,
+    "electricity_amount": 146,
+    "fee": 4,
+    "process_status": "Pending",
+    "billing_status": "pending",
+    "timestamp": "2026-07-06 10:00:00"
+}

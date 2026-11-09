@@ -2,7 +2,7 @@
 
 Plain PHP and shell cURL examples for SIMcloud and AllNet Airtime. The balance and network lookup examples read from SIMcloud. Airtime, electricity and voucher purchases run against a local server that returns sample JSON. They require no account, wallet funds or live credentials.
 
-Use a [supported PHP version](https://www.php.net/supported-versions.php) with the cURL extension. Check it with `php --ri curl`. The shell examples use `curl` 7.76 or later.
+Use PHP 8.5, or another [supported PHP version](https://www.php.net/supported-versions.php), with the cURL extension. Check it with `php --ri curl`. The shell examples use `curl` 7.76 or later.
 
 ## SIMcloud balance and network lookup
 
@@ -121,5 +121,9 @@ Save the AllNet order ID and reference. If the response is lost before either ar
 | AllNet voucher order and retrieval | [AllNet Vendor API](https://allnetairtime.co.za/api/docs/) |
 
 Machine-readable contracts are available for [SIMcloud](https://simcloud.co.za/api/openapi.yaml) and [AllNet](https://allnetairtime.co.za/api/docs/openapi.php).
+
+## PHP style
+
+The examples follow the code style, documentation and error handling guidance in [PHP: The Right Way](https://phptherightway.com/). Run the [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer) style check with `phpcs --standard=PSR12 examples mock.php`.
 
 The sample code is available under the [MIT licence](LICENSE).

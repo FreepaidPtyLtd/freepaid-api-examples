@@ -1,9 +1,16 @@
 <?php
 
+/**
+ * Queue an airtime order and check its delivery using local sample responses.
+ *
+ * @link https://simcloud.co.za/api/airtime.html
+ */
+
 declare(strict_types=1);
 
 require __DIR__ . '/http.php';
 
+// The loopback endpoint returns fixtures and cannot reach the SIMcloud wallet.
 $url = 'http://127.0.0.1:8080/api/airtime.php';
 $auth = 'Authorization: Bearer sample-token';
 
@@ -15,8 +22,12 @@ try {
         'reference' => 'EXAMPLE-AIRTIME-001',
     ]);
 
-    // Store this ID with your order before checking the status in a live integration.
-    $requestId = $queued['request_id'] ?? throw new RuntimeException('Missing airtime request ID.');
+    // SIMcloud's 201 response confirms queuing. Save the ID before checking delivery.
+    $requestId = $queued['request_id'] ?? null;
+    if (!is_int($requestId) || $requestId < 1) {
+        throw new RuntimeException('SIMcloud did not return a valid airtime request ID.');
+    }
+
     $query = http_build_query(['request_id' => $requestId]);
     $order = requestJson("$url?$query", $auth);
 

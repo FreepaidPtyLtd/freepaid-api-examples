@@ -1,19 +1,76 @@
-# Freepaid API examples
+<p align="center">
+  <a href="https://freepaid.co.za/">
+    <img src="https://avatars.githubusercontent.com/u/161700599?v=4&amp;s=160" width="80" height="80" alt="Freepaid">
+  </a>
+</p>
 
-Plain PHP and shell cURL examples for SIMcloud and AllNet Airtime. The balance and network lookup examples read from SIMcloud. Airtime, electricity and voucher purchases run against a local server that returns sample JSON. They require no account, wallet funds or live credentials.
+<h1 align="center">Freepaid API Examples</h1>
 
-Use PHP 8.5, or another [supported PHP version](https://www.php.net/supported-versions.php), with the cURL extension. Check it with `php --ri curl`. The shell examples use `curl` 7.76 or later.
+<p align="center">
+  <strong>Build with SIMcloud and AllNet Airtime</strong><br>
+  Plain PHP and cURL examples for South African airtime, prepaid electricity and airtime voucher APIs, with wallet balance and mobile network lookup.
+</p>
 
-## SIMcloud balance and network lookup
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#choose-an-example">Examples</a> ·
+  <a href="#api-reference">API reference</a> ·
+  <a href="#support-and-contributions">Support</a>
+</p>
 
-In the SIMcloud portal, open **API → Get Token**, then set `SIMCLOUD_API_TOKEN` in your shell environment. Set `MSISDN` to a South African mobile number you can look up, in local or `+27` format. Keep your token out of source files.
+> [!NOTE]
+> **Try purchases locally with sample responses.** The airtime, electricity and voucher demos use fictional orders and PIN placeholders. You can run them without an account or wallet funds. Balance and network lookup use a live SIMcloud API token.
+
+<a name="run-the-purchase-examples-locally"></a>
+
+## Quick start
+
+Use PHP 8.5 or another [supported PHP version](https://www.php.net/supported-versions.php) with the cURL extension. Run `php --ri curl` to check. The shell examples use cURL 7.76 or later.
+
+**1. Start the local sample server.**
+
+~~~sh
+git clone https://github.com/FreepaidPtyLtd/freepaid-api-examples.git
+cd freepaid-api-examples
+php -S 127.0.0.1:8080 mock.php
+~~~
+
+**2. Run an airtime order in a second terminal.**
+
+~~~sh
+cd freepaid-api-examples
+php examples/simcloud-airtime.php
+~~~
+
+The script prints a queued response with `request_id: 1001`, followed by a sample order with `status: delivered`. Stop the local server with Ctrl+C when you finish.
+
+## Choose an example
+
+| Example | What it shows | Runs against |
+| --- | --- | --- |
+| [SIMcloud wallet balance](examples/simcloud-balance.php) | Read the last known balance in rand and its update time. | Live SIMcloud |
+| [SIMcloud network lookup](examples/simcloud-network.php) | Find the mobile network for a South African number. | Live SIMcloud |
+| [SIMcloud airtime order](examples/simcloud-airtime.php) | Queue a top-up and check delivery by request ID. | Local samples |
+| [SIMcloud prepaid electricity](examples/simcloud-electricity.php) | Check meter support, submit an order and retrieve a sample token. | Local samples |
+| [AllNet Airtime vouchers](examples/allnet-vouchers.php) | Place a voucher order and retrieve the sample PINs. | Local samples |
+
+<a name="simcloud-balance-and-network-lookup"></a>
+
+## Live SIMcloud balance and network lookup
+
+In the SIMcloud portal, open **API → Get Token** and set `SIMCLOUD_API_TOKEN` in your shell environment. Set `MSISDN` to a South African mobile number you can look up, in local or `+27` format.
 
 ~~~sh
 php examples/simcloud-balance.php
 php examples/simcloud-network.php "$MSISDN"
 ~~~
 
-The same calls with cURL. The pipe passes the bearer header to cURL without putting the token in its command-line arguments.
+HTTP `401` means you should check the API token. Network lookup returns HTTP `404` when it cannot match the number to a network.
+
+<details>
+<summary>cURL commands for balance and network lookup</summary>
+
+The pipe passes the bearer header to cURL without putting the token in cURL's command-line arguments.
 
 ~~~sh
 printf 'Authorization: Bearer %s\n' "$SIMCLOUD_API_TOKEN" |
@@ -28,29 +85,22 @@ printf 'Authorization: Bearer %s\n' "$SIMCLOUD_API_TOKEN" |
   --data-urlencode "msisdn=$MSISDN"
 ~~~
 
-Both endpoints return HTTP 200 on success. The balance script prints the account's last known balance in rand and its update time. Network lookup returns the normalised number and network, or HTTP 404 when it finds no match. HTTP 401 means you should check the token.
+</details>
 
-## Run the purchase examples locally
+## Local purchase walkthroughs
 
-From the repository root, start the fixture server in one terminal.
+Run these with the [local sample server](#quick-start) running. The server checks the method, URL, sample credentials and JSON request body before returning a [sample response](samples/). Each script checks order status once.
 
-~~~sh
-php -S 127.0.0.1:8080 mock.php
-~~~
+<a name="simcloud-airtime"></a>
 
-In another terminal, run any of the PHP examples.
+### SIMcloud airtime API
 
-~~~sh
-php examples/simcloud-airtime.php
-php examples/simcloud-electricity.php
-php examples/allnet-vouchers.php
-~~~
+Run `php examples/simcloud-airtime.php` to queue a sample airtime order and check delivery. The POST returns HTTP `201` with a `request_id`. The GET uses that ID to read the order status.
 
-The [sample responses](samples/) use fictional order IDs and PIN placeholders. The local server checks the method, URL, sample credentials and JSON body before returning the matching fixture. Each PHP script makes one status request to show how to read the result. Stop the server with Ctrl+C when you finish.
+For a live integration, save your reference before submitting and store the returned `request_id` before polling. Continue checking while the status is `queued` or `pending`. If the POST times out or returns HTTP `409`, check by `request_id` or `orderno` if available. Otherwise, check your account history or contact SIMcloud support before submitting again.
 
-### SIMcloud airtime
-
-Queue an order, then use the returned `request_id` to check delivery. The sample POST returns HTTP 201 and `request_id: 1001`. The sample GET shows a delivered order.
+<details>
+<summary>cURL commands for an airtime order</summary>
 
 ~~~sh
 curl -q --noproxy 127.0.0.1 --connect-timeout 5 --max-time 20 --fail-with-body -sS \
@@ -65,11 +115,18 @@ curl -q --noproxy 127.0.0.1 --connect-timeout 5 --max-time 20 --fail-with-body -
   --data-urlencode 'request_id=1001'
 ~~~
 
-In a live integration, save your reference before submitting and save the returned `request_id` before polling. Poll while the status is `queued` or `pending`. After a timeout or HTTP 409, look up the existing order by `request_id` or `orderno` if you have one. If neither is available, check your account history or contact SIMcloud support before submitting again.
+</details>
 
-### SIMcloud electricity
+<a name="simcloud-electricity"></a>
 
-Check that the meter is supported, submit the purchase, then fetch its status by client reference. The sample POST accepts R150, including a R4 fee, and the sample GET shows the completed voucher.
+### SIMcloud prepaid electricity API
+
+Run `php examples/simcloud-electricity.php` to check a meter, submit a sample electricity order and retrieve the voucher. The script submits only after the meter check returns `supported: true`. The sample order is R150 including a R4 fee.
+
+A live HTTP `201` response can still have `process_status: Pending`. If a live request times out or returns HTTP `202` with `reconciliation_pending`, check the original or returned `client_reference` before placing another order. Treat the voucher as ready when the GET returns `status: success` with PINs, then present them in `entry_order`.
+
+<details>
+<summary>cURL commands for a meter check and electricity order</summary>
 
 ~~~sh
 curl -q --noproxy 127.0.0.1 --connect-timeout 5 --max-time 20 --fail-with-body -sS --get \
@@ -89,11 +146,18 @@ curl -q --noproxy 127.0.0.1 --connect-timeout 5 --max-time 20 --fail-with-body -
   --data-urlencode 'client_reference=EXAMPLE-ELEC-001'
 ~~~
 
-Submit only after the meter check returns `supported: true`. An HTTP 201 acceptance can still have `process_status: Pending`. If a live purchase times out or returns HTTP 202 with `reconciliation_pending`, keep checking by the original or returned `client_reference` without submitting another purchase. Treat the voucher as ready when the GET returns `status: success` and includes the PINs. Follow their `entry_order` when presenting them.
+</details>
 
-### AllNet Airtime vouchers
+<a name="allnet-airtime-vouchers"></a>
 
-Place an order using `quantity` and a whole-rand `value` per voucher. The sample POST returns HTTP 201 and `data.order_id: 2001`. Use that ID to fetch the order and its voucher PINs.
+### AllNet Airtime voucher API
+
+Run `php examples/allnet-vouchers.php` to order two sample R10 airtime vouchers. The POST takes `quantity` and a whole-rand `value` per voucher. It returns HTTP `201` with `data.order_id`. Use that ID to fetch the order and its voucher PINs.
+
+For live orders, save the order ID and the reference assigned by AllNet. If the response is lost before either arrives, check the vendor portal before placing another order. Keep live voucher PINs out of application logs.
+
+<details>
+<summary>cURL commands for ordering and fetching vouchers</summary>
 
 ~~~sh
 curl -q --noproxy 127.0.0.1 --connect-timeout 5 --max-time 20 --fail-with-body -sS \
@@ -108,22 +172,30 @@ curl -q --noproxy 127.0.0.1 --connect-timeout 5 --max-time 20 --fail-with-body -
   --data-urlencode 'order_id=2001'
 ~~~
 
-Save the AllNet order ID and reference. If the response is lost before either arrives, reconcile the order in the vendor portal before placing another one. The optional `description` field labels the order and the API assigns the order reference. Keep live voucher PINs out of application logs.
+</details>
 
-## API references
+<a name="api-references"></a>
 
-| Example | Live API documentation |
+## API reference
+
+| Service | Official documentation |
 | --- | --- |
-| SIMcloud wallet balance | [Balance](https://simcloud.co.za/api/balance.html) |
-| SIMcloud network lookup | [Network lookup](https://simcloud.co.za/api/network.html) |
-| SIMcloud airtime order and status | [Airtime](https://simcloud.co.za/api/airtime.html) |
-| SIMcloud meter check, electricity order and voucher | [Electricity](https://simcloud.co.za/api/electricity.html) |
-| AllNet voucher order and retrieval | [AllNet Vendor API](https://allnetairtime.co.za/api/docs/) |
+| SIMcloud REST API | [Wallet balance](https://simcloud.co.za/api/balance.html) · [Network lookup](https://simcloud.co.za/api/network.html) · [Airtime](https://simcloud.co.za/api/airtime.html) · [Prepaid electricity](https://simcloud.co.za/api/electricity.html) |
+| AllNet Airtime Vendor API | [Voucher ordering and retrieval](https://allnetairtime.co.za/api/docs/) |
 
-Machine-readable contracts are available for [SIMcloud](https://simcloud.co.za/api/openapi.yaml) and [AllNet](https://allnetairtime.co.za/api/docs/openapi.php).
+For machine-readable contracts, use the official [SIMcloud OpenAPI specification](https://simcloud.co.za/api/openapi.yaml) and [AllNet OpenAPI specification](https://allnetairtime.co.za/api/docs/openapi.php).
 
-## PHP style
+## Support and contributions
 
-The examples follow the code style, documentation and error handling guidance in [PHP: The Right Way](https://phptherightway.com/). Run the [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer) style check with `phpcs --standard=PSR12 examples mock.php`.
+- Report a problem with an example on [GitHub Issues](https://github.com/FreepaidPtyLtd/freepaid-api-examples/issues). Include the PHP or cURL version, the command, and the error with account details and credentials removed.
+- For account, integration or order enquiries, use the [Freepaid contact page](https://freepaid.co.za/contact-airtime-factory.php).
 
-The sample code is available under the [MIT licence](LICENSE).
+### PHP style
+
+The examples use the [PHP: The Right Way](https://phptherightway.com/) guidance for documentation and error handling. Run [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer) to check PSR-12 formatting.
+
+~~~sh
+phpcs --standard=PSR12 examples mock.php
+~~~
+
+Maintained by [Freepaid (Pty) Ltd](https://freepaid.co.za/). Sample code is available under the [MIT licence](LICENSE).

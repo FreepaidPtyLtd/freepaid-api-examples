@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 function requestJson(string $url, string $authHeader, ?array $payload = null): array
 {
-    $endpoint = parse_url($url, PHP_URL_PATH);
+    $operation = ($payload === null ? 'GET ' : 'POST ') . parse_url($url, PHP_URL_PATH);
     $headers = ['Accept: application/json', $authHeader];
     $options = [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_CONNECTTIMEOUT => 5,
         CURLOPT_TIMEOUT => 20,
-        CURLOPT_NOPROXY => '127.0.0.1',
     ];
+
+    if (parse_url($url, PHP_URL_HOST) === '127.0.0.1') {
+        $options[CURLOPT_NOPROXY] = '127.0.0.1';
+    }
 
     if ($payload !== null) {
         $headers[] = 'Content-Type: application/json';
@@ -19,27 +22,28 @@ function requestJson(string $url, string $authHeader, ?array $payload = null): a
     }
 
     $request = curl_init($url);
-    curl_setopt_array($request, $options + [CURLOPT_HTTPHEADER => $headers]);
+    if ($request === false || !curl_setopt_array($request, $options + [CURLOPT_HTTPHEADER => $headers])) {
+        throw new RuntimeException("$operation: could not configure cURL.");
+    }
+
     $body = curl_exec($request);
 
     if ($body === false) {
-        throw new RuntimeException("$endpoint: " . curl_error($request));
+        throw new RuntimeException("$operation: " . curl_error($request));
     }
 
     $status = curl_getinfo($request, CURLINFO_RESPONSE_CODE);
-    $response = json_decode($body, true);
-
     if ($status === 401) {
-        throw new RuntimeException("$endpoint: HTTP 401. Check your API credentials.");
+        throw new RuntimeException("$operation: HTTP 401. Check your API credentials.");
     }
 
     if ($status < 200 || $status >= 300) {
-        $message = $response['message'] ?? 'Unexpected API response';
-        throw new RuntimeException("$endpoint: HTTP $status. $message");
+        throw new RuntimeException("$operation: HTTP $status.");
     }
 
-    if (!is_array($response)) {
-        throw new RuntimeException("$endpoint: HTTP $status returned invalid JSON.");
+    $response = json_decode($body, true);
+    if (!is_array($response) || !is_string($response['status'] ?? null)) {
+        throw new RuntimeException("$operation: HTTP $status did not return a JSON object with a status.");
     }
 
     return $response;

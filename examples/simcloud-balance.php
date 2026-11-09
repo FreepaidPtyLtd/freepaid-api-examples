@@ -6,10 +6,13 @@ require __DIR__ . '/http.php';
 
 try {
     $balance = requestJson('https://simcloud.co.za/api/balance.php', simcloudAuthorization());
+    if ($balance['status'] !== 'success' || !is_numeric($balance['balance'] ?? null)) {
+        throw new RuntimeException('SIMcloud did not return a wallet balance.');
+    }
 
     printJson([
         'balance' => $balance['balance'],
-        'updated_at' => $balance['updated_at'],
+        'updated_at' => $balance['updated_at'] ?? null,
     ]);
 } catch (RuntimeException | JsonException $error) {
     fail($error->getMessage());

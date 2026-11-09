@@ -11,7 +11,12 @@ if (!preg_match('/^(?:0|\+?27)\d{9}$/D', $msisdn)) {
 
 try {
     $query = http_build_query(['msisdn' => $msisdn]);
-    printJson(requestJson("https://simcloud.co.za/api/network.php?$query", simcloudAuthorization()));
+    $result = requestJson("https://simcloud.co.za/api/network.php?$query", simcloudAuthorization());
+    if ($result['status'] !== 'success' || !is_string($result['network'] ?? null)) {
+        throw new RuntimeException('SIMcloud did not return a mobile network.');
+    }
+
+    printJson($result);
 } catch (RuntimeException | JsonException $error) {
     fail($error->getMessage());
 }
